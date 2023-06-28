@@ -1,7 +1,9 @@
-const { GraphQLSchema } = require("graphql");
+
 const graphql = require("graphql");
 const Movie = require('../models/Movie');
-const {GraphQLObjectType,GraphQLID,GraphQLString} = graphql
+const Director = require('../models/Director');
+
+const {GraphQLObjectType,GraphQLID,GraphQLString,GraphQLInt,GraphQLSchema} = graphql
 
 const MovieType = new GraphQLObjectType({
     name: "Movie",
@@ -14,6 +16,16 @@ const MovieType = new GraphQLObjectType({
 })
 
 
+const DirectorType = new GraphQLObjectType({
+    name: "Director",
+    //取得したいデータを記載
+    fields:() =>   ({
+        id:{type:GraphQLID},
+        name:{type:GraphQLString},
+        age:{type:GraphQLInt}
+    })
+})
+
 const RootQuery = new GraphQLObjectType({
     name: "RootQueryType",
     fields:{
@@ -22,6 +34,13 @@ const RootQuery = new GraphQLObjectType({
             args:{id:{type:GraphQLString}},
             resolve(parents,args){
                 return Movie.findById(args.id)
+            }
+        },
+        director:{
+            type:DirectorType,
+            args:{id:{type:GraphQLString}},
+            resolve(parents,args){
+                return Director.findById(args.id)
             }
         }
     }
@@ -42,6 +61,20 @@ const Mutation = new GraphQLObjectType({
                     genre: args.genre
                 })
                 return movie.save()
+            }
+        },
+        addDirector:{
+            type:DirectorType,
+            args:{
+                name:{type:GraphQLString},
+                age:{type:GraphQLInt}
+            },
+            resolve(parent,args){
+                let director = new Director({
+                    name: args.name,
+                    age: args.age
+                })
+                return director.save()
             }
         }
     }
