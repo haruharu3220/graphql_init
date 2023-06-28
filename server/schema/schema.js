@@ -3,7 +3,7 @@ const graphql = require("graphql");
 const Movie = require('../models/Movie');
 const Director = require('../models/Director');
 
-const {GraphQLObjectType,GraphQLID,GraphQLString,GraphQLInt,GraphQLSchema} = graphql
+const {GraphQLObjectType,GraphQLID,GraphQLString,GraphQLInt,GraphQLSchema,GraphQLList} = graphql
 
 const MovieType = new GraphQLObjectType({
     name: "Movie",
@@ -11,7 +11,13 @@ const MovieType = new GraphQLObjectType({
     fields:() =>   ({
         id:{type:GraphQLID},
         name:{type:GraphQLString},
-        genre:{type:GraphQLString}
+        genre:{type:GraphQLString},
+        director:{
+            type:DirectorType,
+            resolve(parent, args){
+                return Director.findById(parent.directorId);
+            }
+        }
     })
 })
 
@@ -22,7 +28,13 @@ const DirectorType = new GraphQLObjectType({
     fields:() =>   ({
         id:{type:GraphQLID},
         name:{type:GraphQLString},
-        age:{type:GraphQLInt}
+        age:{type:GraphQLInt},
+        movies:{
+            type:new GraphQLList(MovieType),
+            resolve(parent,args){
+                return Movie.find({directorId:parent.id})
+            }
+        }
     })
 })
 
@@ -53,12 +65,14 @@ const Mutation = new GraphQLObjectType({
             type:MovieType,
             args:{
                 name:{type:GraphQLString},
-                genre:{type:GraphQLString}
+                genre:{type:GraphQLString},
+                directorId:{type:GraphQLID}
             },
             resolve(parent,args){
                 let movie = new Movie({
                     name: args.name,
-                    genre: args.genre
+                    genre: args.genre,
+                    directorId:args.directorId
                 })
                 return movie.save()
             }
