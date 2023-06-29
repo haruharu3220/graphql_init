@@ -3,7 +3,7 @@ const graphql = require("graphql");
 const Movie = require('../models/Movie');
 const Director = require('../models/Director');
 
-const {GraphQLObjectType,GraphQLID,GraphQLString,GraphQLInt,GraphQLSchema,GraphQLList} = graphql
+const {GraphQLObjectType,GraphQLID,GraphQLString,GraphQLInt,GraphQLSchema,GraphQLList,GraphQLNonNull} = graphql
 
 const MovieType = new GraphQLObjectType({
     name: "Movie",
@@ -101,6 +101,38 @@ const Mutation = new GraphQLObjectType({
                     age: args.age
                 })
                 return director.save()
+            }
+        },
+        updateMovie:{
+            type: MovieType,
+            args:{
+                id:{type:GraphQLNonNull(GraphQLID) },
+                name:{type:GraphQLString},
+                genre:{type:GraphQLString},
+                directorId:{type:GraphQLInt}
+
+            },
+            resolve(parent,args){
+                let updateMovie = {}
+                args.name && (updateMovie.name = args.name)
+                args.age && (updateMovie.genre = args.genre)
+                args.directorID && (updateMovie.directorId = args.directorId)
+                return Movie.findByIdAndUpdate(args.id,updateMovie,{new:true})
+            }
+        },
+        updateDirector:{
+            type:DirectorType,
+            args:{
+                id:{type:GraphQLNonNull(GraphQLID) },
+                name:{type:GraphQLString},
+                age:{type:GraphQLInt}
+            },
+            resolve(parent,args){
+                let updateDirector = {}
+                args.name && (updateDirector.name = args.name)
+                args.age && (updateDirector.age = args.age)
+                return Director.findByIdAndUpdate(args.id,updateDirector,{new:true})
+
             }
         }
     }
